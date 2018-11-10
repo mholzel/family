@@ -83,11 +83,22 @@ class App extends Component {
   };
 
   swiperight = event => {
+    console.log("swiperight");
     this.setState({ showSidebar: true });
   }
 
-
   swipeleft = event => {
+    console.log("swipeleft");
+    this.setState({ showSidebar: false });
+  }
+
+  panright = event => {
+    console.log("panright");
+    this.setState({ showSidebar: true });
+  }
+
+  panleft = event => {
+    console.log("panleft");
     this.setState({ showSidebar: false });
   }
 
@@ -111,6 +122,8 @@ class App extends Component {
     this.hammer.on("pinchend", this.pinchend);
     this.hammer.on('swipeleft', this.swipeleft);
     this.hammer.on('swiperight', this.swiperight);
+    this.hammer.on('panleft', this.panleft);
+    this.hammer.on('panright', this.panright);
     fetch(url)
       .then(data => data.json())
       .then(data => this.selectSize(data))
