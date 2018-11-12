@@ -6,11 +6,12 @@ import Buttons from './buttons/Buttons'
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css'; // This only needs to be imported once in your app
 
+// Smoother pinching
 // Loading indicator needs some styling
-// Maintain state when selecting images.
 // Infinite scrolling
 // Non-uniform image sizes 
 
+const maxCols = 10;
 const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
 const imageURL = 'http://codekafana.com/family/wp-content/uploads/';
 const baseURL = true ? 'http://codekafana.com/react3/' : 'http://localhost/';
@@ -27,10 +28,11 @@ class App extends Component {
 
   state = {
     urls: [],
-    scale: 25,
+    cols: 4,
     showSidebar: true,
     isLoading: true,
     lightboxIndex: -1,
+    oldestLoadedDate: new Date().getUTCMonth(),
   };
 
   onTouchStart = event => {
@@ -74,7 +76,7 @@ class App extends Component {
   render() {
     const urls = this.state.urls;
     const lightboxIndex = this.state.lightboxIndex;
-    const style = { width: this.state.scale.toString() + '%' };
+    const style = { width: (100.0 / this.state.cols) + '%' };
     return (<div>
       <div className="grid" ref={elem => this.gridElement = elem} onTouchStart={this.onTouchStart} onTouchEnd={this.onTouchEnd}>
         {urls.map((entry, index) => {
@@ -120,11 +122,11 @@ class App extends Component {
   };
 
   zoomIn = () => {
-    this.setState(state => ({ scale: state.scale < 100 ? state.scale * 2 : state.scale }));
+    this.setState(state => ({ cols: state.cols > 1 ? state.cols - 1 : state.cols }));
   }
 
   zoomOut = () => {
-    this.setState(state => ({ scale: state.scale > 6.26 ? state.scale / 2 : state.scale }));
+    this.setState(state => ({ cols: state.cols < maxCols ? state.cols + 1 : state.cols }));
   }
 
   pinchend = event => {
