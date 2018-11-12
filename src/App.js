@@ -1,48 +1,26 @@
 import React, { Component } from 'react';
 import Hammer from 'hammerjs';
 import './App.css';
-import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
+import Sidebar from './sidebar/Sidebar'
+import Zoom from './zoom/Zoom'
 
+// TODO Pan is called too many times
 // TODO infinite scrolling
-// TODO Pinch behavior
 // TODO Date picker
 // TODO Non-uniform image sizes 
 
-const date = new Date();
 const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
-const month = months[date.getUTCMonth()];
-const year = date.getUTCFullYear();
 const imageURL = 'http://codekafana.com/family/wp-content/uploads/';
 const baseURL = true ? 'http://codekafana.com/react3/' : 'http://localhost/';
-const url = baseURL + 'files.php?m=' + month + '&y=' + year;
 const size = '150x150';
 const sizeEnding = size + '.jpg';
-const today = new Date();
-const blogStart = new Date(2015, 0, 1);
-
-class SettingsButton extends Component {
-  render() {
-    return <button id="settingsbutton" onClick={this.props.toggleDrawer}>click me</button>
-  }
-}
-
-class Sidebar extends Component {
-  render() {
-    return (
-      <SwipeableDrawer open={this.props.open} onClose={this.props.sidebarOnClose} onOpen={this.props.sidebarOnOpen}>
-        <div>
-          Hi There..............
-        </div>
-      </SwipeableDrawer>);
-  }
-}
 
 class App extends Component {
 
   state = {
     urls: [],
     scale: 25,
-    sidebar: false,
+    showSidebar: true,
   };
 
   onTouchStart = event => {
@@ -57,33 +35,41 @@ class App extends Component {
     }
   }
 
-  toggleDrawer = () => {
-    this.setState(state => ({ sidebar: !state.sidebar }));
+  onDateSelected = date => {
+    this.setState({ showSidebar: false });
+    const month = months[date.getUTCMonth()];
+    const year = date.getUTCFullYear();
+    const url = baseURL + 'files.php?m=' + month + '&y=' + year;
+    console.log("fetching " + url);
+    fetch(url)
+      .then(data => {
+        console.log("loaded " + url);
+        return data.json();
+      })
+      .then(data => this.selectSize(data))
+      .then(data => this.setState({ urls: data }));
   }
 
-  sidebarOnClose = () => {
-    this.setState({ sidebar: false });
-  }
-
-  sidebarOnOpen = () => {
-    this.setState({ sidebar: true });
+  onCancelSidebar = () => {
+    this.setState({ showSidebar: false });
   }
 
   render() {
     const style = { width: this.state.scale.toString() + '%' };
-    console.log("Width: " + style.width);
     return (<div>
-      <div className="grid" ref={elem => this.gridElement = elem}>
+      <div className="grid" ref={elem => this.gridElement = elem} onTouchStart={this.onTouchStart} onTouchEnd={this.onTouchEnd}>
         {this.state.urls.map(entry => {
           const fullSizeUrl = imageURL + entry.slice(0, -1 - sizeEnding.length) + '.jpg'
           return (<div className="cell" key={fullSizeUrl} style={style}>
-            <a href={fullSizeUrl}><img src={imageURL + entry} alt='' className="responsive-image" /></a>
+            <a href={fullSizeUrl}><img src={imageURL + entry} className="responsive-image" alt="" /></a>
           </div>)
         })
         }
       </div>
-      <Sidebar open={this.state.sidebar} sidebarOnClose={this.sidebarOnClose} sidebarOnOpen={this.sidebarOnOpen} />
-      <SettingsButton toggleDrawer={this.toggleDrawer} />>
+      <Sidebar onDateSelected={this.onDateSelected}
+        onCancelSidebar={this.onCancelSidebar}
+        showSidebar={this.state.showSidebar} />
+      <Zoom zoomIn={this.zoomIn} zoomOut={this.zoomOut} />
     </div>);
   }
 
@@ -95,6 +81,28 @@ class App extends Component {
       return correctSizeUrls;
     }, []);
   };
+
+  /* 
+  TODO This doesn't seem to work on desktop devices, so we are 
+  using the panleft and panright events, even though they seem 
+  to be triggered multiple times. 
+  */
+  panend = event => {
+    if (event.additionalEvent === "panright")
+      this.setState({ showSidebar: true });
+    else if (event.additionalEvent === "panleft")
+      this.setState({ showSidebar: false });
+  }
+
+  panright = event => {
+    console.log("panright");
+    this.setState({ showSidebar: true });
+  }
+
+  panleft = event => {
+    console.log("panleft");
+    this.setState({ showSidebar: false });
+  }
 
   zoomIn = () => {
     this.setState(state => ({ scale: state.scale < 100 ? state.scale * 2 : state.scale }));
@@ -112,12 +120,20 @@ class App extends Component {
   }
 
   componentDidMount() {
-    // this.hammer = Hammer(this.gridElement);
-    // this.hammer.on("pinchend", this.pinchend);
-    fetch(url)
-      .then(data => data.json())
-      .then(data => this.selectSize(data))
-      .then(data => this.setState({ urls: data }));
+    this.hammer = Hammer(this.gridElement);
+    if (true) {
+      this.hammer.on("panleft", this.panleft);
+      this.hammer.on("panright", this.panright);
+    } else {
+      // See comment in panend function
+      this.hammer.on("panend", this.panend);
+    }
+    this.hammer.on('pinchend', this.pinchend);
+    this.onDateSelected(new Date());
+  }
+
+  componentWillUnmount() {
+    console.log("unmounting app")
   }
 }
 
