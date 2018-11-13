@@ -13,6 +13,8 @@ import 'react-image-lightbox/style.css'; // This only needs to be imported once 
 // Non-uniform image sizes 
 // Settings button which collapses the others
 // Search button
+// PHP should gracefully handle unset params
+
 
 const maxCols = 10;
 const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
@@ -27,6 +29,11 @@ function urlGenerator(shortUrl) {
   };
 }
 
+/*
+We want to get all of the jsons for up to the last n month
+
+*/
+
 class App extends Component {
 
   state = {
@@ -35,9 +42,12 @@ class App extends Component {
     showSidebar: true,
     isLoading: true,
     lightboxIndex: -1,
-    oldestLoadedDate: new Date().getUTCMonth(),
+    oldestLoadedJsonMonth: new Date().getUTCMonth(),
+    oldestLoadedImageMonth: new Date().getUTCMonth()
   };
 
+  /* We need these touch event handlers to enabled pinch detecting ONLY when there 
+  is more than one touch event. If we don't enable these, then Hammerjs will block scrolling. */
   onTouchStart = event => {
     if (event.touches.length >= 2) {
       this.hammer.get("pinch").set({ enable: true });
@@ -111,7 +121,6 @@ class App extends Component {
           }
         />
       }
-
     </div>);
   }
 

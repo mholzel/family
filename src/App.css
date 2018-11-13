@@ -1,6 +1,11 @@
-#bodyelem { background-color: #f3f5fa; }
+html, body {
+    height: 100%;
+    margin: 0;
+    background-color: #f3f5fa;
+}
 
 .grid {
+    min-height: 100%;
     justify-content: center;
     display: flex;
     flex-wrap: wrap;
