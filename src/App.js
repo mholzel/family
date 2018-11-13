@@ -6,15 +6,18 @@ import Buttons from './buttons/Buttons'
 import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css'; // This only needs to be imported once in your app
 
+// Infinite scrolling
+// Display image dates and other data 
 // Smoother pinching
 // Loading indicator needs some styling
-// Infinite scrolling
 // Non-uniform image sizes 
+// Settings button which collapses the others
+// Search button
 
 const maxCols = 10;
 const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
 const imageURL = 'http://codekafana.com/family/wp-content/uploads/';
-const baseURL = true ? 'http://codekafana.com/react3/' : 'http://localhost/';
+const baseURL = true ? 'http://codekafana.com/gallery/' : 'http://localhost/';
 const size = '150x150';
 const sizeEnding = size + '.jpg';
 function urlGenerator(shortUrl) {
