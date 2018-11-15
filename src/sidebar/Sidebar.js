@@ -17,29 +17,27 @@ class Sidebar extends Component {
         const cancelButtonStyle = { position: "absolute", top: 0, right: 0, zIndex: 1 };
         console.log(this.props.showSidebar)
         return (
-            <div id="sidebar">
-                <Slide in={this.props.showSidebar} direction="right">
-                    <div style={this.props.style}>
-                        <div id="calendar">
-                            <InfiniteCalendar
-                                width={"100%"}
-                                height={window.innerHeight}
-                                bottom={0}
-                                min={blogStart}
-                                max={todayPlus1Month}
-                                minDate={blogStart}
-                                maxDate={today}
-                                onSelect={this.props.onDateSelected}
-                            />
-                        </div>
-                        <div id="cancelbutton">
-                            <IconButton style={cancelButtonStyle} size="large" onClick={this.props.onCancelSidebar} >
-                                <CancelIcon fontSize="large" />
-                            </IconButton>
-                        </div>
+            <Slide in={this.props.showSidebar} direction="right">
+                <div id="sidebar" style={this.props.style}>
+                    <div id="calendar">
+                        <InfiniteCalendar
+                            width={"100%"}
+                            height={window.innerHeight}
+                            bottom={0}
+                            min={blogStart}
+                            max={todayPlus1Month}
+                            minDate={blogStart}
+                            maxDate={today}
+                            onSelect={this.props.onDateSelected}
+                        />
                     </div>
-                </Slide >
-            </div>
+                    <div id="cancelbutton">
+                        <IconButton style={cancelButtonStyle} size="large" onClick={this.props.onCancelSidebar} >
+                            <CancelIcon fontSize="large" />
+                        </IconButton>
+                    </div>
+                </div>
+            </Slide >
         );
     }
 
