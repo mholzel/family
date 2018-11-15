@@ -7,6 +7,7 @@ import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css'; // This only needs to be imported once in your app
 import VisibilitySensor from 'react-visibility-sensor';
 
+// Main page position when zooming
 // TODO When zooming out, check if last element is visible. If so, load more 
 // Infinite scrolling... Allow calendar selection while loading. 
 // Display image dates and other data 

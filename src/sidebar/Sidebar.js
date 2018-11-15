@@ -4,6 +4,7 @@ import IconButton from '@material-ui/core/IconButton';
 import InfiniteCalendar from 'react-infinite-calendar';
 import 'react-infinite-calendar/styles.css';
 import './Sidebar.css'
+import Slide from '@material-ui/core/Slide';
 
 class Sidebar extends Component {
 
@@ -14,26 +15,32 @@ class Sidebar extends Component {
         const todayPlus1Month = new Date();
         todayPlus1Month.setMonth(today.getMonth() + 1);
         const cancelButtonStyle = { position: "absolute", top: 0, right: 0, zIndex: 1 };
+        console.log(this.props.showSidebar)
         return (
-            <div id="sidebar" style={{ visibility: this.props.showSidebar ? "visible" : "hidden" }}>
-                <div id="calendar">
-                    <InfiniteCalendar
-                        width={"100%"}
-                        height={window.innerHeight}
-                        bottom={0}
-                        min={blogStart}
-                        max={todayPlus1Month}
-                        minDate={blogStart}
-                        maxDate={today}
-                        onSelect={this.props.onDateSelected}
-                    />
-                </div>
-                <div position="relative">
-                    <IconButton style={cancelButtonStyle} size="large" onClick={this.props.onCancelSidebar} >
-                        <CancelIcon fontSize="large" />
-                    </IconButton>
-                </div>
-            </div>);
+            <div id="sidebar">
+                <Slide in={this.props.showSidebar} direction="right">
+                    <div style={this.props.style}>
+                        <div id="calendar">
+                            <InfiniteCalendar
+                                width={"100%"}
+                                height={window.innerHeight}
+                                bottom={0}
+                                min={blogStart}
+                                max={todayPlus1Month}
+                                minDate={blogStart}
+                                maxDate={today}
+                                onSelect={this.props.onDateSelected}
+                            />
+                        </div>
+                        <div id="cancelbutton">
+                            <IconButton style={cancelButtonStyle} size="large" onClick={this.props.onCancelSidebar} >
+                                <CancelIcon fontSize="large" />
+                            </IconButton>
+                        </div>
+                    </div>
+                </Slide >
+            </div>
+        );
     }
 
     componentWillUnmount() {
