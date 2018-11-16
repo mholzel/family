@@ -12,7 +12,6 @@ import VisibilitySensor from 'react-visibility-sensor';
 // When zooming out, check if last element is visible. If so, load more 
 // Allow calendar selection while loading. 
 // Display image dates and other data 
-// Smoother pinching
 // Non-uniform image sizes 
 // Search button
 // Really old searches may crash since the urls returned may be empty 
@@ -38,6 +37,7 @@ class App extends Component {
     elementsToLoad = 0;
     lastVisibleElement = null;
     zoomChanged = false;
+    initialPinchScale = 1;
 
     state = {
         urls: [],
@@ -49,7 +49,8 @@ class App extends Component {
 
     componentDidMount() {
         this.hammer = Hammer(this.gridElement);
-        this.hammer.on('pinchend', this.pinchend);
+        this.hammer.on('pinch', this.pinch);
+        this.hammer.on('pinchstart', this.pinchstart)
         this.load(new Date());
     }
 
@@ -253,24 +254,20 @@ class App extends Component {
         this.setState(state => ({ cols: state.cols < maxCols ? state.cols + 1 : state.cols }));
     }
 
-    initialPinchScale = 0;
-
     pinchstart = event => {
-        // TODO
-        this.initialPinchScale = 0;
+        this.initialPinchScale = 1;
     }
 
     pinch = event => {
-        // TODO
-    }
-
-    pinchend = event => {
-        if (event.scale > 1.25)
+        const scaleDiff = event.scale - this.initialPinchScale;
+        if (scaleDiff > 1) {
+            this.initialPinchScale = event.scale;
             this.zoomIn();
-        else if (event.scale < .75)
+        } else if (scaleDiff < -.5) {
+            this.initialPinchScale = event.scale;
             this.zoomOut();
+        }
     }
-
 }
 
 export default App;
