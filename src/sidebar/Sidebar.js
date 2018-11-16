@@ -15,7 +15,6 @@ class Sidebar extends Component {
         const todayPlus1Month = new Date();
         todayPlus1Month.setMonth(today.getMonth() + 1);
         const cancelButtonStyle = { position: "absolute", top: 0, right: 0, zIndex: 1 };
-        console.log(this.props.showSidebar)
         return (
             <Slide in={this.props.showSidebar} direction="right">
                 <div id="sidebar" style={this.props.style}>

@@ -7,15 +7,16 @@ import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css'; // This only needs to be imported once in your app
 import VisibilitySensor from 'react-visibility-sensor';
 
-// Main page position when zooming
-// TODO When zooming out, check if last element is visible. If so, load more 
-// Infinite scrolling... Allow calendar selection while loading. 
+// files.php only needs to send the files without the 150x150 ending. We should assume the others exist and 
+// Update calendar to follow date of images on screen 
+// When zooming out, check if last element is visible. If so, load more 
+// Allow calendar selection while loading. 
 // Display image dates and other data 
 // Smoother pinching
-// Loading indicator needs some styling
 // Non-uniform image sizes 
-// Settings button which collapses the others
 // Search button
+// Really old searches may crash since the urls returned may be empty 
+// Need to stop recursion on inception date
 const imageBuffer = 200;
 const maxCols = 10;
 const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
@@ -35,6 +36,8 @@ class App extends Component {
     isLoading = false;
     lastQueriedDate = null;
     elementsToLoad = 0;
+    lastVisibleElement = null;
+    zoomChanged = false;
 
     state = {
         urls: [],
@@ -48,6 +51,14 @@ class App extends Component {
         this.hammer = Hammer(this.gridElement);
         this.hammer.on('pinchend', this.pinchend);
         this.load(new Date());
+    }
+
+    componentDidUpdate() {
+        const elem = document.querySelector(`[data-key="${this.lastVisibleElement}"]`);
+        if (this.zoomChanged && elem != null) {
+            elem.scrollIntoView();
+            this.zoomChanged = false;
+        }
     }
 
     load = (date = this.lastQueriedDate, scenario = 1) => {
@@ -89,7 +100,6 @@ class App extends Component {
             /* If images are currently being loaded, do nothing. 
             Once they are loaded, we will detect if we loaded enough. */
             if (this.isLoading) {
-                //console.log("Please wait. Images are in the process of being loaded.");
                 return;
             }
         }
@@ -138,11 +148,19 @@ class App extends Component {
         }
     }
 
-    loadMore = (scenario = 3) => {
+    loadMore = (scenario = 3, key = null, visible = true) => {
+        if (key != null && visible) {
+            this.lastVisibleElement = key;
+        }
         this.load(this.lastQueriedDate, scenario);
     }
 
     image = (entry, index) => {
+        // TODO Use fullsize url as fallback, as suggested in this Stackoverflow
+        // return 
+        //     (<object data="http://stackoverflow.com/does-not-exist.png" type="image/png">
+        //         <img src="https://appharbor.com/assets/images/stackoverflow-logo.png" alt="example">
+        //   </object>)
         return <img src={entry.smallUrl} className="responsive-image" alt="" onClick={() => this.imageSelected(index)} />;
     }
 
@@ -151,13 +169,14 @@ class App extends Component {
         const lightboxIndex = this.state.lightboxIndex;
         const style = { width: (100.0 / this.state.cols) + '%' };
         const loadMoreIndex = Math.max(0, urls.length - imageBuffer);
+        console.log("render")
         return (
             <div>
                 <div className="grid" ref={elem => this.gridElement = elem} onTouchStart={this.onTouchStart} onTouchEnd={this.onTouchEnd}>
                     {urls.map((entry, index) => {
                         return (
-                            <div className="cell" key={entry.fullsizeUrl} style={style}>
-                                {(index >= loadMoreIndex && index % 10 === 0) ? <VisibilitySensor onChange={() => this.loadMore()}>{this.image(entry, index)}</VisibilitySensor> : this.image(entry, index)}
+                            <div className="cell" key={entry.fullsizeUrl} data-key={entry.fullsizeUrl} style={style}>
+                                {(index >= loadMoreIndex && index % 10 === 0) ? <VisibilitySensor onChange={(visible) => this.loadMore(3, entry.fullsizeUrl, visible)}>{this.image(entry, index)}</VisibilitySensor> : this.image(entry, index)}
                             </div>
                         )
                     })
@@ -189,7 +208,7 @@ class App extends Component {
             </div>);
     }
 
-    /* We need these touch event handlers to enabled pinch detecting ONLY when there 
+    /* We need these touch event handlers to enabled pinch detecting ONLY when there
     is more than one touch event. If we don't enable these, then Hammerjs will block scrolling. */
     onTouchStart = event => {
         if (event.touches.length >= 2) {
@@ -216,7 +235,6 @@ class App extends Component {
     }
 
     selectSize = urls => {
-        console.log("urls " + urls.length);
         return urls.reduce(function (correctSizeUrls, url) {
             if (url.endsWith(sizeEnding)) {
                 correctSizeUrls.push(urlGenerator(url));
@@ -226,11 +244,24 @@ class App extends Component {
     };
 
     zoomIn = () => {
+        this.zoomChanged = true;
         this.setState(state => ({ cols: state.cols > 1 ? state.cols - 1 : state.cols }));
     }
 
     zoomOut = () => {
+        this.zoomChanged = true;
         this.setState(state => ({ cols: state.cols < maxCols ? state.cols + 1 : state.cols }));
+    }
+
+    initialPinchScale = 0;
+
+    pinchstart = event => {
+        // TODO
+        this.initialPinchScale = 0;
+    }
+
+    pinch = event => {
+        // TODO
     }
 
     pinchend = event => {
