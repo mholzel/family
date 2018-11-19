@@ -19,8 +19,8 @@ import VisibilitySensor from 'react-visibility-sensor';
 const imageBuffer = 200;
 const maxCols = 10;
 const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
-const imageURL = 'http://codekafana.com/family/wp-content/uploads/';
-const baseURL = true ? 'http://codekafana.com/gallery/' : 'http://localhost/';
+const imageURL = 'https://holzel.com/family/wp-content/uploads/';
+const baseURL = true ? 'https://holzel.com/gallery/' : 'http://localhost/';
 const size = '150x150';
 const sizeEnding = size + '.jpg';
 function urlGenerator(shortUrl) {
