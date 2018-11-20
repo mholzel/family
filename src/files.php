@@ -7,8 +7,16 @@
 
 		$files = array();    
 		foreach (scandir($dir) as $file) {
-			if (in_array($file, $ignored)) continue;
-			$files[$file] = filemtime($dir . '/' . $file);
+			// File should not be in the ignored array
+            if (in_array($file, $ignored)) continue;
+            // File should not be the reduced size version... e.g. 123098-150x150.jpg
+            // TODO Should have end of string match $, but trying to diagnose what is broken. 
+            if (preg_match('/\d{3,4}x\d{3,4}\.jpg$/', $file)){
+                continue;
+            } else {
+                print $file."<br/>";
+            }
+            $files[$file] = filemtime($dir . '/' . $file);
 		}
 
 		arsort($files);
