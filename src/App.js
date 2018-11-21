@@ -22,11 +22,11 @@ const months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'
 const imageURL = 'https://holzel.com/family/wp-content/uploads/';
 const baseURL = true ? 'https://holzel.com/gallery/' : 'http://localhost/';
 const size = '150x150';
-const sizeEnding = size + '.jpg';
-function urlGenerator(shortUrl) {
+const sizeEnding = '-' + size + '.jpg';
+function urlGenerator(url) {
     return {
-        smallUrl: imageURL + shortUrl,
-        fullsizeUrl: imageURL + shortUrl.slice(0, -1 - sizeEnding.length) + '.jpg'
+        smallUrl: imageURL + url.slice(0, -4) + sizeEnding,
+        fullsizeUrl: imageURL + url
     };
 }
 
@@ -35,6 +35,7 @@ class App extends Component {
     isLoading = false;
     lastQueriedDate = null;
     elementsToLoad = 0;
+    lastInvisibleElement = null;
     lastVisibleElement = null;
     zoomChanged = false;
     initialPinchScale = 1;
@@ -55,7 +56,10 @@ class App extends Component {
     }
 
     componentDidUpdate() {
-        const elem = document.querySelector(`[data-key="${this.lastVisibleElement}"]`);
+        // TODO
+        let index = Math.floor((this.lastInvisibleElement + this.lastVisibleElement) / 2);
+        index = this.lastVisibleElement;
+        const elem = document.querySelector(`[data-key="${index}"]`);
         if (this.zoomChanged && elem != null) {
             elem.scrollIntoView();
             this.zoomChanged = false;
@@ -121,7 +125,7 @@ class App extends Component {
                 console.log("loaded " + url);
                 return response.json();
             })
-            .then(json => this.selectSize(json))
+            .then(json => json.map(url => urlGenerator(url)))
             .then(urls => this.onUrlsLoaded(urls, scenario));
     }
 
@@ -149,11 +153,17 @@ class App extends Component {
         }
     }
 
-    loadMore = (scenario = 3, key = null, visible = true) => {
-        if (key != null && visible) {
-            this.lastVisibleElement = key;
+    loadMore = (scenario = 3, key = null, visible = true, index = -1) => {
+        if (key != null) {
+            if (visible) {
+                this.lastVisibleElement = key;
+            } else {
+                this.lastInvisibleElement = key;
+            }
         }
-        this.load(this.lastQueriedDate, scenario);
+        if (index > this.state.urls.length - imageBuffer) {
+            this.load(this.lastQueriedDate, scenario);
+        }
     }
 
     image = (entry, index) => {
@@ -169,7 +179,6 @@ class App extends Component {
         const urls = this.state.urls;
         const lightboxIndex = this.state.lightboxIndex;
         const style = { width: (100.0 / this.state.cols) + '%' };
-        const loadMoreIndex = Math.max(0, urls.length - imageBuffer);
         console.log("render")
         return (
             <div>
@@ -177,7 +186,7 @@ class App extends Component {
                     {urls.map((entry, index) => {
                         return (
                             <div className="cell" key={entry.fullsizeUrl} data-key={entry.fullsizeUrl} style={style}>
-                                {(index >= loadMoreIndex && index % 10 === 0) ? <VisibilitySensor onChange={(visible) => this.loadMore(3, entry.fullsizeUrl, visible)}>{this.image(entry, index)}</VisibilitySensor> : this.image(entry, index)}
+                                {<VisibilitySensor onChange={(visible) => this.loadMore(3, entry.fullsizeUrl, visible, index)}>{this.image(entry, index)}</VisibilitySensor>}
                             </div>
                         )
                     })
