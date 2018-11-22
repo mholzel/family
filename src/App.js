@@ -7,7 +7,6 @@ import Lightbox from 'react-image-lightbox';
 import 'react-image-lightbox/style.css'; // This only needs to be imported once in your app
 import VisibilitySensor from 'react-visibility-sensor';
 
-// files.php only needs to send the files without the 150x150 ending. We should assume the others exist and 
 // Update calendar to follow date of images on screen 
 // When zooming out, check if last element is visible. If so, load more 
 // Allow calendar selection while loading. 
@@ -35,8 +34,7 @@ class App extends Component {
     isLoading = false;
     lastQueriedDate = null;
     elementsToLoad = 0;
-    lastInvisibleElement = null;
-    lastVisibleElement = null;
+    newestVisibleElementIndex = null;
     zoomChanged = false;
     initialPinchScale = 1;
 
@@ -56,13 +54,13 @@ class App extends Component {
     }
 
     componentDidUpdate() {
-        // TODO
-        let index = Math.floor((this.lastInvisibleElement + this.lastVisibleElement) / 2);
-        index = this.lastVisibleElement;
-        const elem = document.querySelector(`[data-key="${index}"]`);
-        if (this.zoomChanged && elem != null) {
-            elem.scrollIntoView();
-            this.zoomChanged = false;
+        if (this.state.urls != null) {
+            console.log(this.state.urls.length + " , " + this.newestVisibleElementIndex);
+            const item = this.state.urls[this.newestVisibleElementIndex];
+            if (this.zoomChanged && item != null) {
+                document.querySelector(`[data-key="${item.fullsizeUrl}"]`).scrollIntoView();
+                this.zoomChanged = false;
+            }
         }
     }
 
@@ -156,9 +154,13 @@ class App extends Component {
     loadMore = (scenario = 3, key = null, visible = true, index = -1) => {
         if (key != null) {
             if (visible) {
-                this.lastVisibleElement = key;
+                if (this.newestVisibleElementIndex == null || index < this.newestVisibleElementIndex) {
+                    this.newestVisibleElementIndex = index;
+                }
             } else {
-                this.lastInvisibleElement = key;
+                if (this.newestVisibleElementIndex != null && this.newestVisibleElementIndex === index) {
+                    this.newestVisibleElementIndex++;
+                }
             }
         }
         if (index > this.state.urls.length - imageBuffer) {
